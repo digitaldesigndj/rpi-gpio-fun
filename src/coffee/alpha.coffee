@@ -1,7 +1,25 @@
 gpio = require 'rpi-gpio'
 async = require 'async'
 
-delay = 10
+delay = 35
+
+num0 = '1110011111100111'
+num1 = '0010000100100001'
+num2 = '1100101111001011'
+num3 = '0110101101101011'
+num4 = '0010110100101101'
+num5 = '0110111001101110'
+num6 = '1110111011101110'
+num7 = '0010001100100011'
+num8 = '1110111111101111'
+num9 = '0010111100101111'
+numa = '1010111110101111'
+numb = '1110110011101100'
+numc = '1100011011000110'
+numd = '1110100111101001'
+nume = '1100111011001110'
+numf = '1000111010001110'
+
 
 zero = '0000000000000000'
 full = '1111111111111111'
@@ -23,6 +41,8 @@ case14 = '0000000000000100'
 case15 = '0000000000000010'
 case16 = '0000000000000001'
 
+
+
 double0 = '1000000010000000'
 double1 = '0100000001000000'
 double2 = '0010000000100000'
@@ -32,28 +52,23 @@ double5 = '0000010000000100'
 double6 = '0000001000000010'
 double7 = '0000000100000001'
 
-encode = ( character ) ->
-  byte = '00000000'
-  switch character
-    when '0' then byte = '01111110'
-    when '1' then byte = '01001000'
-    when '2' then byte = '00111101'
-    when '3' then byte = '01101101'
-    when '4' then byte = '01001011'
-    when '5' then byte = '01100111'
-    when '6' then byte = '01110011'
-    when '7' then byte = '01001100'
-    when '8' then byte = '01111111'
-    when '9' then byte = '01001111'
-    when 'a' then byte = '01011111'
-    when 'b' then byte = '01110011'
-    when 'c' then byte = '00110110'
-    when 'd' then byte = '01111001'
-    when 'e' then byte = '00110111'
-    when 'f' then byte = '00010111'
-  return byte
+letter0 = '01111110'
+letter1 = '01001000'
+letter2 = '00111101'
+letter3 = '01101101'
+letter4 = '01001011'
+letter5 = '01100111'
+letter6 = '01110011'
+letter7 = '01001100'
+letter8 = '01111111'
+letter9 = '01001111'
+lettera = '01011111'
+letterb = '01110011'
+letterc = '00110110'
+letterd = '01111001'
+lettere = '00110111'
+letterf = '00010111'
 
-count = [1...9]
 
 stringToArr = ( binString ) ->
   arr = binString.split ''
@@ -62,21 +77,9 @@ stringToArr = ( binString ) ->
       return true
     return false
 
-string = '112233445566778899001234567890135792468009876543211234567890'
-  # return v.toString().split('').map ( v ) ->
-
-# binaries = string.split('').map ( v ) ->
-#   return encode v.toString()
-
-binaries = [ zero, full ]
-
-# console.log goodies
-
 write = ->
-  # cases = [ letter0, letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8, letter9, lettera, letterb, letterc, letterd, lettere, letterf ]
-  # states = cases.map ( v ) ->
-
-  states = binaries.map ( v ) ->
+  cases = [ letter0, letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8, letter9, lettera, letterb, letterc, letterd, lettere, letterf ]
+  states = cases.map ( v ) ->
     return ( done ) ->
       pushByte stringToArr( v ), done
       return
@@ -94,31 +97,40 @@ pushByte = ( array, done ) ->
     # byte pushed into register
     gpio.write 12, true, ->
       # New Byte is shifted to output
-        process.nextTick gpio.write 12, false, ->
-            console.log 'Byte Pushed'
-            process.nextTick done()
-            return
+      setTimeout ->
+        gpio.write 12, false, ->
+          console.log 'Byte Pushed'
+          done()
+          return
+      , delay
       return
     return
   return
+    
 
 pushBit = ( option, done ) ->
   gpio.write 7, option, ->
-    process.nextTick gpio.write 11, true, ->
-      process.nextTick async.parallel [
+    setTimeout ->
+      gpio.write 11, true, ->
+        setTimeout ->
+          async.parallel [
             ( done ) ->
               gpio.write 7, false, ->
-                process.nextTick done()
+                setTimeout ->
+                  done()
+                , delay
                 return
             ( done ) ->
               gpio.write 11, false, ->
-                process.nextTick done()
+                setTimeout ->
+                  done()
+                , delay
                 return
           ], (err, results) ->
             # console.log 'Set 1 Bit in Register: ' + option
-            process.nextTick done()
-            return
-      return
+            done()
+        , delay
+    , delay
     return
   return
 
@@ -139,3 +151,4 @@ async.parallel [
   console.log 'Pins set up'
   write()
   return
+
